@@ -1,47 +1,47 @@
-﻿using System.Drawing;
+﻿namespace VisionComputacional;
+
 using OpenCvSharp;
-
-var mat = new Mat("autobus-escolar.png");
-
-Console.WriteLine(mat.Width);
-Console.WriteLine(mat.Height);
-
-var mat3 = new Mat<Vec3b>(mat);
-var indexer = mat3.GetIndexer();
-
-var output = File.CreateText("output.txt");
-var output2 = File.CreateText("output2.txt");
-
-for (var y = 0; y < mat.Height; y++)
+public class Program
 {
-    for (var x = 0; x < mat.Width; x++)
+    public static void Main()
     {
-        // BGR
-        var color = indexer[x,y];
-        var blue = color.Item0;
-        var green = color.Item1;
-        var red = color.Item2;
+        // byte[,] matrix =
+        // {
+        //     {156, 170, 189},
+        //     {152, 168, 186},
+        //     {150, 164, 180}
+        // };
+        //
+        // var result = Shifting.Shift(matrix, ShiftingType.Vertical);
+        //
+        // for (var i = 0; i < result.GetLength(0); i++)
+        // {
+        //     for (var j = 0; j < result.GetLength(1); j++)
+        //     {
+        //         Console.Write(result[i,j]);
+        //         Console.Write(" ");
+        //     }
+        //     Console.WriteLine();
+        // }
+
+        Console.WriteLine("Enter image path");
+        var path = Console.ReadLine();
+
+        if (path == null)
+        {
+            Console.WriteLine("Invalid file...");
+            return;
+        }
         
-        output.Write($"[{red},{green}, {blue}],");
-        var gValue = Math.Truncate((red+blue+green) / 3.0 );
-        output2.Write($"{gValue},");
-        color.Item0 = Negative(Convert.ToByte(gValue));
-        color.Item1 = Negative(Convert.ToByte(gValue));
-        color.Item2 = Negative(Convert.ToByte(gValue));
-        mat.Set<Vec3b>(x, y, color);
+        var image = new Mat(path, ImreadModes.Grayscale);
+
+        using var result = Shifting.Shift(image, ShiftingType.Horizontal);
+
+        using(new Window("Original Image", image))
+        using (new Window("Result", result))
+        {
+            Cv2.WaitKey();
+        }
+
     }
-    output.WriteLine();
-    output2.WriteLine();
-}
-
-output.Close();
-output2.Close();
-
-var bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(mat);
-
-
-bitmap.Save("out.bmp");
-byte Negative(byte value)
-{
-    return Convert.ToByte(Convert.ToByte(255) - value);
 }
